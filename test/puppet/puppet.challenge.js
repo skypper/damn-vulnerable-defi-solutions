@@ -94,7 +94,6 @@ describe('[Challenge] Puppet', function () {
     });
 
     it('Execution', async function () {
-        /** CODE YOUR SOLUTION HERE */
         const priceBefore = await lendingPool._computeOraclePrice();
         console.log("priceBefore = ", priceBefore);
 
