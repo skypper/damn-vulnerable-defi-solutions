@@ -45,7 +45,9 @@ describe('[Challenge] Backdoor', function () {
     });
 
     it('Execution', async function () {
-        /** CODE YOUR SOLUTION HERE */
+        const walletRegistryAttackerFactory = await ethers.getContractFactory("WalletRegistryAttacker", player);
+        await walletRegistryAttackerFactory.deploy(
+            masterCopy.address, walletFactory.address, token.address, users, walletRegistry.address);
     });
 
     after(async function () {
