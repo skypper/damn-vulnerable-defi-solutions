@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 
 import "solmate/src/tokens/ERC20.sol";
 import "./WalletRegistry.sol";
-import "hardhat/console.sol";
 
 interface IGnosisSafeProxyFactory {
     function createProxyWithCallback(

