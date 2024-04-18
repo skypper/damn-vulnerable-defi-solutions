@@ -37,6 +37,7 @@ contract WalletDeployer {
         if (msg.sender != chief || _mom == address(0) || mom != address(0)) {
             revert Boom();
         }
+        // msg.sender == chief && _mom != 0 && mom == 0
         mom = _mom;
     }
 
